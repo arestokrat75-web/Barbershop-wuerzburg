@@ -47,8 +47,9 @@ export default function Booking() {
                 const month = (formData.date.getMonth() + 1).toString().padStart(2, '0');
                 const day = formData.date.getDate().toString().padStart(2, '0');
                 const dateParam = `${year}-${month}-${day}`;
+                const masterParam = formData.master?.id || 'any';
 
-                const response = await fetch(`${import.meta.env.BASE_URL}api/get-busy-slots?date=${dateParam}`);
+                const response = await fetch(`${import.meta.env.BASE_URL}api/get-busy-slots?date=${dateParam}&master=${masterParam}`);
                 const data = await response.json();
                 if (data.busy) {
                     setBusySlots(data.busy);
