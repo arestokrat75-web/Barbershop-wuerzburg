@@ -1,10 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 const serviceOptions = [
-    'Klassischer Haarschnitt – €35',
-    'Haarschnitt & Bartpflege – €50',
-    'Bartpflege & Rasur – €25',
-    'Premium Grooming – €70',
+    { name: 'Klassischer Haarschnitt', price: '35€', duration: '30 Min' },
+    { name: 'Haarschnitt & Bartpflege', price: '50€', duration: '60 Min' },
+    { name: 'Bartpflege & Rasur', price: '25€', duration: '30 Min' },
+    { name: 'Premium Grooming', price: '70€', duration: '90 Min' },
+];
+
+const masters = [
+    { id: 'max', name: 'Max Keller', role: 'Master Barber', img: 'barber-1.png' },
+    { id: 'leon', name: 'Leon Hartmann', role: 'Senior Barber', img: 'barber-2.png' },
+    { id: 'viktor', name: 'Viktor Brandt', role: 'Grooming Spezialist', img: 'barber-3.png' },
 ];
 
 const daysOfWeek = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -14,24 +20,73 @@ const months = [
 ];
 
 export default function Booking() {
+    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        name: '', phone: '', email: '', service: '', date: null, time: '', message: '',
+        service: null,
+        master: null,
+        date: null,
+        time: '',
+        name: '',
+        phone: '',
+        email: '',
+        message: '',
     });
     const [submitted, setSubmitted] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [busySlots, setBusySlots] = useState([]);
+    const [loadingAvailability, setLoadingAvailability] = useState(false);
 
-    // Generate time slots (9:00 - 19:00 in 15min steps)
+    // Fetch busy slots when date changes
+    useEffect(() => {
+        if (!formData.date) return;
+
+        const fetchAvailability = async () => {
+            setLoadingAvailability(true);
+            try {
+                const year = formData.date.getFullYear();
+                const month = (formData.date.getMonth() + 1).toString().padStart(2, '0');
+                const day = formData.date.getDate().toString().padStart(2, '0');
+                const dateParam = `${year}-${month}-${day}`;
+
+                const response = await fetch(`${import.meta.env.BASE_URL}api/get-busy-slots?date=${dateParam}`);
+                const data = await response.json();
+                if (data.busy) {
+                    setBusySlots(data.busy);
+                }
+            } catch (err) {
+                console.error("Availability fetch failed:", err);
+            } finally {
+                setLoadingAvailability(false);
+            }
+        };
+
+        fetchAvailability();
+    }, [formData.date]);
+
+    // Time slots (9:00 - 19:00, 15min)
     const timeSlotsArray = useMemo(() => {
         const slots = [];
         for (let hour = 9; hour < 19; hour++) {
             for (let min = 0; min < 60; min += 15) {
-                const h = hour.toString().padStart(2, '0');
-                const m = min.toString().padStart(2, '0');
-                slots.push(`${h}:${m}`);
+                const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+
+                // Check if this time overlaps with any busy slot
+                const isBusy = busySlots.some(busy => {
+                    const busyStart = new Date(busy.start);
+                    const busyEnd = new Date(busy.end);
+                    const slotTime = new Date(formData.date);
+                    slotTime.setHours(hour, min, 0, 0);
+
+                    return slotTime >= busyStart && slotTime < busyEnd;
+                });
+
+                if (!isBusy) {
+                    slots.push(timeStr);
+                }
             }
         }
         return slots;
-    }, []);
+    }, [busySlots, formData.date]);
 
     // Calendar logic
     const calendarDays = useMemo(() => {
@@ -39,271 +94,302 @@ export default function Booking() {
         const month = currentMonth.getMonth();
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-
         const days = [];
-        // Pad start
         for (let i = 0; i < firstDay; i++) days.push(null);
-        // Month days
         for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
         return days;
     }, [currentMonth]);
 
-    const isToday = (date) => {
-        if (!date) return false;
-        const today = new Date();
-        return date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear();
-    };
-
-    const isSelected = (date) => {
-        if (!date || !formData.date) return false;
-        return date.getTime() === formData.date.getTime();
-    };
-
-    const handleDateSelect = (date) => {
-        if (!date) return;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (date < today) return; // Disable past dates
-        setFormData({ ...formData, date });
-    };
-
-    const changeMonth = (offset) => {
-        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + offset, 1));
-    };
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const handleNext = () => setStep(step + 1);
+    const handleBack = () => setStep(step - 1);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!formData.date || !formData.time) {
-            alert('Bitte wähle einen Termin und eine Uhrzeit aus.');
-            return;
-        }
+
+        // Prepare WhatsApp message
+        const phone = "491234567890"; // PLACEHOLDER: Please provide your actual WhatsApp number
+        const dateStr = formData.date?.toLocaleDateString('de-DE');
+        const message = `*Neue Buchung - MAX Barber*%0A%0A` +
+            `*Kunde:* ${formData.name}%0A` +
+            `*Telefon:* ${formData.phone}%0A` +
+            `*Service:* ${formData.service?.name}%0A` +
+            `*Meister:* ${formData.master?.name}%0A` +
+            `*Termin:* ${dateStr}, ${formData.time} Uhr%0A%0A` +
+            `*Nachricht:* ${formData.message || 'Keine'}`;
+
+        const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+
         setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 4000);
+
+        // Open WhatsApp
+        window.open(whatsappUrl, '_blank');
+
+        setTimeout(() => {
+            setSubmitted(false);
+            setStep(1);
+            setFormData({ service: null, master: null, date: null, time: '', name: '', phone: '', email: '', message: '' });
+        }, 5000);
     };
 
     return (
-        <section id="buchen" className="relative py-24 md:py-32 bg-barber-black">
+        <section id="buchen" className="relative py-24 md:py-32 bg-barber-black min-h-[800px]">
             <div className="section-divider mb-16" />
 
             <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 {/* Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-12">
                     <span className="text-barber-gold text-sm font-semibold tracking-[0.25em] uppercase">
-                        Termin vereinbaren
+                        Reservierung
                     </span>
-                    <h2 className="font-serif text-3xl md:text-5xl font-bold mt-4 mb-6">
-                        Bereit für deinen
-                        <br />
-                        <span className="text-gradient-gold">besten Haarschnitt?</span>
+                    <h2 className="font-serif text-3xl md:text-5xl font-bold mt-4 mb-4">
+                        Termin <span className="text-gradient-gold">buchen</span>
                     </h2>
-                    <p className="text-barber-text-muted text-lg max-w-2xl mx-auto">
-                        Wähle deinen Wunschtermin direkt in unserem interaktiven Kalender.
-                    </p>
+
+                    {/* Step Indicator */}
+                    {!submitted && (
+                        <div className="flex items-center justify-center gap-2 mt-8">
+                            {[1, 2, 3, 4].map((s) => (
+                                <div
+                                    key={s}
+                                    className={`h-1 transition-all duration-500 rounded-full ${s <= step ? 'w-8 bg-barber-gold' : 'w-4 bg-barber-border'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                <div className="grid lg:grid-cols-5 gap-12">
-                    {/* Form (3 cols) */}
-                    <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-8">
-                        {/* 1. Personal Info */}
-                        <div className="space-y-5">
-                            <h3 className="text-barber-gold text-sm font-bold uppercase tracking-wider border-b border-barber-border pb-2">1. Kontaktdaten</h3>
-                            <div className="grid sm:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-xs font-medium text-barber-text-muted uppercase mb-2">Dein Name *</label>
-                                    <input
-                                        type="text" name="name" required
-                                        value={formData.name} onChange={handleChange}
-                                        placeholder="Max Mustermann"
-                                        className="w-full px-4 py-3 bg-barber-surface border border-barber-border rounded text-barber-text focus:border-barber-gold/50 focus:ring-1 focus:ring-barber-gold/20 outline-none transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-barber-text-muted uppercase mb-2">Telefon *</label>
-                                    <input
-                                        type="tel" name="phone" required
-                                        value={formData.phone} onChange={handleChange}
-                                        placeholder="+49 931 12345"
-                                        className="w-full px-4 py-3 bg-barber-surface border border-barber-border rounded text-barber-text focus:border-barber-gold/50 focus:ring-1 focus:ring-barber-gold/20 outline-none transition-all"
-                                    />
-                                </div>
+                <div className="max-w-3xl mx-auto">
+                    {submitted ? (
+                        <div className="bg-barber-surface border border-barber-gold/30 rounded-2xl p-12 text-center animate-fade-in">
+                            <div className="w-20 h-20 bg-barber-gold/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-10 h-10 text-barber-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
                             </div>
+                            <h3 className="font-serif text-3xl font-bold mb-4">Anfrage gesendet!</h3>
+                            <p className="text-barber-text-muted text-lg mb-8">
+                                Vielen Dank, {formData.name}! Wir haben deine Buchung für den {formData.date?.toLocaleDateString('de-DE')} um {formData.time} Uhr erhalten.
+                                <br />Wir bestätigen deinen Termin in Kürze.
+                            </p>
+                            <button
+                                onClick={() => setSubmitted(false)}
+                                className="text-barber-gold font-bold hover:underline"
+                            >
+                                Zurück zur Startseite
+                            </button>
                         </div>
+                    ) : (
+                        <div className="bg-barber-surface border border-barber-border rounded-2xl p-6 md:p-10 shadow-2xl relative overflow-hidden transition-all duration-500">
 
-                        {/* 2. Service Selection */}
-                        <div className="space-y-4">
-                            <h3 className="text-barber-gold text-sm font-bold uppercase tracking-wider border-b border-barber-border pb-2">2. Service</h3>
-                            <div className="grid md:grid-cols-2 gap-3">
-                                {serviceOptions.map((opt) => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, service: opt })}
-                                        className={`px-4 py-3 rounded text-sm text-left border transition-all ${formData.service === opt
-                                                ? 'bg-barber-gold/10 border-barber-gold text-barber-gold'
-                                                : 'bg-barber-surface border-barber-border text-barber-text-muted hover:border-barber-gold/50'
-                                            }`}
-                                    >
-                                        {opt}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* 3. Date Selection (Calendar) */}
-                        <div className="space-y-4">
-                            <h3 className="text-barber-gold text-sm font-bold uppercase tracking-wider border-b border-barber-border pb-2">3. Datum & Uhrzeit</h3>
-
-                            <div className="bg-barber-surface border border-barber-border rounded-xl p-6">
-                                {/* Calendar Header */}
-                                <div className="flex items-center justify-between mb-6">
-                                    <button
-                                        type="button" onClick={() => changeMonth(-1)}
-                                        className="p-2 hover:text-barber-gold transition-colors"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                                    </button>
-                                    <h4 className="font-serif text-lg font-bold">{months[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h4>
-                                    <button
-                                        type="button" onClick={() => changeMonth(1)}
-                                        className="p-2 hover:text-barber-gold transition-colors"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                                    </button>
-                                </div>
-
-                                {/* Calendar Grid */}
-                                <div className="grid grid-cols-7 gap-1 mb-2">
-                                    {daysOfWeek.map(d => (
-                                        <div key={d} className="text-center text-[10px] uppercase tracking-widest text-barber-text-dim font-bold py-2">{d}</div>
-                                    ))}
-                                </div>
-                                <div className="grid grid-cols-7 gap-1">
-                                    {calendarDays.map((date, i) => {
-                                        const past = date && date < new Date().setHours(0, 0, 0, 0);
-                                        const sun = date && date.getDay() === 0;
-                                        const disabled = !date || past || sun;
-
-                                        return (
+                            {/* STEP 1: SERVICE */}
+                            {step === 1 && (
+                                <div className="animate-fade-in-right">
+                                    <h3 className="font-serif text-2xl font-bold mb-6">Wähle deinen Service</h3>
+                                    <div className="grid gap-4">
+                                        {serviceOptions.map((opt) => (
                                             <button
-                                                key={i}
-                                                type="button"
-                                                disabled={disabled}
-                                                onClick={() => handleDateSelect(date)}
-                                                className={`aspect-square flex items-center justify-center rounded text-sm transition-all ${!date ? 'invisible' :
-                                                        isSelected(date) ? 'bg-barber-gold text-barber-black font-bold scale-110 shadow-lg shadow-barber-gold/20' :
-                                                            disabled ? 'text-barber-text-dim/20 cursor-not-allowed' :
-                                                                isToday(date) ? 'text-barber-gold border border-barber-gold/30 font-bold' :
-                                                                    'text-barber-text-muted hover:bg-barber-gold/10 hover:text-barber-gold'
+                                                key={opt.name}
+                                                onClick={() => { setFormData({ ...formData, service: opt }); handleNext(); }}
+                                                className={`flex items-center justify-between p-5 rounded-xl border transition-all text-left group ${formData.service?.name === opt.name
+                                                    ? 'bg-barber-gold/10 border-barber-gold'
+                                                    : 'bg-barber-black border-barber-border hover:border-barber-gold/50'
                                                     }`}
                                             >
-                                                {date?.getDate()}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                                <p className="text-[10px] text-barber-text-dim mt-4 uppercase tracking-tighter">Sonntags geschlossen</p>
-                            </div>
-
-                            {/* Time Slots */}
-                            {formData.date && (
-                                <div className="animate-fade-in space-y-4">
-                                    <p className="text-xs font-medium text-barber-text-muted uppercase">Verfügbare Uhrzeiten am {formData.date.toLocaleDateString('de-DE')}</p>
-                                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                                        {timeSlotsArray.map((time) => (
-                                            <button
-                                                key={time}
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, time })}
-                                                className={`py-2 rounded text-xs transition-all border ${formData.time === time
-                                                        ? 'bg-barber-gold border-barber-gold text-barber-black font-bold'
-                                                        : 'bg-barber-surface border-barber-border text-barber-text-muted hover:border-barber-gold/40'
-                                                    }`}
-                                            >
-                                                {time}
+                                                <div>
+                                                    <p className="font-bold text-lg group-hover:text-barber-gold transition-colors">{opt.name}</p>
+                                                    <p className="text-sm text-barber-text-dim">{opt.duration}</p>
+                                                </div>
+                                                <div className="text-barber-gold font-bold text-xl">{opt.price}</div>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             )}
-                        </div>
 
-                        {/* 4. Message */}
-                        <div className="space-y-3">
-                            <h3 className="text-barber-gold text-sm font-bold uppercase tracking-wider border-b border-barber-border pb-2">4. Nachricht</h3>
-                            <textarea
-                                name="message" rows="3"
-                                value={formData.message} onChange={handleChange}
-                                placeholder="Besondere Wünsche oder Anmerkungen..."
-                                className="w-full px-4 py-3 bg-barber-surface border border-barber-border rounded text-barber-text placeholder:text-barber-text-dim focus:border-barber-gold/50 focus:ring-1 focus:ring-barber-gold/20 outline-none transition-all resize-none"
-                            />
-                        </div>
+                            {/* STEP 2: MASTER */}
+                            {step === 2 && (
+                                <div className="animate-fade-in-right">
+                                    <button onClick={handleBack} className="text-barber-gold flex items-center gap-2 mb-6 hover:translate-x-[-4px] transition-transform">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                        Zurück zum Service
+                                    </button>
+                                    <h3 className="font-serif text-2xl font-bold mb-4">Wähle deinen Meister</h3>
+                                    <p className="text-barber-text-dim mb-8 text-sm">Wer soll dich betreuen?</p>
 
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            className="w-full sm:w-auto btn-shimmer px-10 py-4 text-barber-black font-bold text-base tracking-wide rounded-lg"
-                        >
-                            {submitted ? '✓ Anfrage gesendet!' : 'TERMIN JETZT ANFRAGEN'}
-                        </button>
-
-                        {submitted && (
-                            <div className="p-4 bg-barber-gold/10 border border-barber-gold/30 rounded-lg animate-fade-in">
-                                <p className="text-barber-gold text-sm font-medium">
-                                    Vielen Dank, {formData.name.split(' ')[0]}! Wir haben deine Anfrage für den {formData.date.toLocaleDateString('de-DE')} um {formData.time} Uhr erhalten. Wir bestätigen den Termin in Kürze per Telefon oder E-Mail.
-                                </p>
-                            </div>
-                        )}
-                    </form>
-
-                    {/* Sidebar info (2 cols) */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-barber-surface rounded-xl p-8 border border-barber-border relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-barber-gold/5 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-barber-gold/10 transition-all duration-700" />
-                            <h3 className="font-serif text-2xl font-bold mb-6 text-barber-gold">MAX Barber</h3>
-                            <div className="space-y-6 text-sm text-barber-text-muted">
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded bg-barber-black border border-barber-border flex items-center justify-center text-barber-gold">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-barber-text font-bold mb-1">Salon Würzburg</p>
-                                        <p>Domstraße 15, 97070 Würzburg</p>
+                                    <div className="grid gap-6">
+                                        {masters.map((m) => (
+                                            <button
+                                                key={m.id}
+                                                onClick={() => { setFormData({ ...formData, master: m }); handleNext(); }}
+                                                className={`flex items-center gap-6 p-4 rounded-xl border transition-all text-left ${formData.master?.id === m.id
+                                                    ? 'bg-barber-gold/10 border-barber-gold'
+                                                    : 'bg-barber-black border-barber-border hover:border-barber-gold/50'
+                                                    }`}
+                                            >
+                                                <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 grayscale group-hover:grayscale-0 transition-all">
+                                                    <img src={`${import.meta.env.BASE_URL}${m.img}`} alt={m.name} className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-lg">{m.name}</p>
+                                                    <p className="text-barber-gold text-xs font-semibold uppercase tracking-wider">{m.role}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={() => { setFormData({ ...formData, master: { name: 'Egal' } }); handleNext(); }}
+                                            className="p-4 rounded-xl border border-dashed border-barber-border text-center hover:border-barber-gold transition-all"
+                                        >
+                                            Egal (Erster verfügbarer Mitarbeiter)
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="flex gap-4">
-                                    <div className="w-10 h-10 rounded bg-barber-black border border-barber-border flex items-center justify-center text-barber-gold">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-barber-text font-bold mb-1">Rückfragen?</p>
-                                        <p>+49 931 1234567</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            )}
 
-                        <div className="bg-barber-surface rounded-xl p-8 border border-barber-border">
-                            <h3 className="font-serif text-xl font-bold mb-6 text-barber-gold">Öffnungszeiten</h3>
-                            <div className="space-y-4 text-sm">
-                                {[
-                                    ['Mo – Fr', '09:00 – 19:00'],
-                                    ['Samstag', '09:00 – 16:00'],
-                                    ['Sonntag', 'Geschlossen'],
-                                ].map(([day, hours]) => (
-                                    <div key={day} className="flex justify-between border-b border-barber-border/30 pb-3 last:border-0 last:pb-0">
-                                        <span className="text-barber-text-muted">{day}</span>
-                                        <span className={hours === 'Geschlossen' ? 'text-barber-text-dim' : 'text-barber-text font-bold'}>{hours}</span>
+                            {/* STEP 3: CALENDAR & TIME */}
+                            {step === 3 && (
+                                <div className="animate-fade-in-right">
+                                    <button onClick={handleBack} className="text-barber-gold flex items-center gap-2 mb-6 hover:translate-x-[-4px] transition-transform">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                        Zurück zum Meister
+                                    </button>
+
+                                    <div className="grid md:grid-cols-2 gap-8">
+                                        {/* Calendar */}
+                                        <div className="space-y-4">
+                                            <h3 className="font-serif text-xl font-bold">Datum wählen</h3>
+                                            <div className="bg-barber-black border border-barber-border rounded-xl p-4">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}>
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                                    </button>
+                                                    <span className="font-bold text-sm">{months[currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                                                    <button type="button" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}>
+                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-7 text-center text-[10px] text-barber-text-dim font-bold mb-2">
+                                                    {daysOfWeek.map(d => <div key={d}>{d}</div>)}
+                                                </div>
+                                                <div className="grid grid-cols-7 gap-1">
+                                                    {calendarDays.map((date, i) => {
+                                                        const isPast = date && date < new Date().setHours(0, 0, 0, 0);
+                                                        const isSun = date && date.getDay() === 0;
+                                                        const active = date && formData.date?.getTime() === date.getTime();
+                                                        return (
+                                                            <button
+                                                                key={i} type="button"
+                                                                disabled={!date || isPast || isSun}
+                                                                onClick={() => setFormData({ ...formData, date, time: '' })}
+                                                                className={`aspect-square text-xs rounded transition-all ${!date ? 'invisible' :
+                                                                    active ? 'bg-barber-gold text-barber-black font-bold' :
+                                                                        (isPast || isSun) ? 'opacity-10 cursor-not-allowed' :
+                                                                            'hover:bg-barber-gold/20'
+                                                                    }`}
+                                                            >
+                                                                {date?.getDate()}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Time Slots */}
+                                        <div className="space-y-4">
+                                            <h3 className="font-serif text-xl font-bold">Uhrzeit</h3>
+                                            <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar grid grid-cols-3 gap-2">
+                                                {!formData.date ? (
+                                                    <div className="col-span-3 text-sm text-barber-text-dim text-center py-10 italic">Datum wählen für verfügbare Zeiten.</div>
+                                                ) : (
+                                                    timeSlotsArray.map(t => (
+                                                        <button
+                                                            key={t}
+                                                            onClick={() => setFormData({ ...formData, time: t })}
+                                                            className={`py-2 text-xs rounded border transition-all ${formData.time === t
+                                                                ? 'bg-barber-gold border-barber-gold text-barber-black font-bold'
+                                                                : 'bg-barber-black border-barber-border text-barber-text-muted hover:border-barber-gold/40'
+                                                                }`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {formData.date && formData.time && (
+                                        <button
+                                            onClick={handleNext}
+                                            className="w-full mt-8 btn-shimmer py-4 text-barber-black font-bold tracking-widest rounded-lg"
+                                        >
+                                            WEITER ZU MEINEN ADTEN
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* STEP 4: CONTACT */}
+                            {step === 4 && (
+                                <form onSubmit={handleSubmit} className="animate-fade-in-right space-y-6">
+                                    <button type="button" onClick={handleBack} className="text-barber-gold flex items-center gap-2 mb-6 hover:translate-x-[-4px] transition-transform">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                        Zurück zur Zeitwahl
+                                    </button>
+
+                                    <h3 className="font-serif text-2xl font-bold mb-6">Persönliche Informationen</h3>
+
+                                    <div className="space-y-4">
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <input
+                                                type="text" required placeholder="Dein Name *"
+                                                value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
+                                            />
+                                            <input
+                                                type="tel" required placeholder="Telefonnummer *"
+                                                value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
+                                            />
+                                        </div>
+                                        <input
+                                            type="email" placeholder="E-Mail Adresse"
+                                            value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
+                                        />
+                                        <textarea
+                                            placeholder="Nachricht (Optional)" rows="3"
+                                            value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                            className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50 resize-none"
+                                        />
+                                    </div>
+
+                                    <div className="p-4 bg-barber-black/50 border border-barber-border rounded-xl space-y-2 text-sm">
+                                        <p className="flex justify-between">
+                                            <span className="text-barber-text-dim">Service:</span>
+                                            <span className="text-barber-gold">{formData.service?.name}</span>
+                                        </p>
+                                        <p className="flex justify-between">
+                                            <span className="text-barber-text-dim">Meister:</span>
+                                            <span className="text-barber-gold">{formData.master?.name}</span>
+                                        </p>
+                                        <p className="flex justify-between">
+                                            <span className="text-barber-text-dim">Termin:</span>
+                                            <span className="text-barber-gold">{formData.date?.toLocaleDateString('de-DE')}, {formData.time} Uhr</span>
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full btn-shimmer py-5 text-barber-black font-bold tracking-[0.2em] rounded-xl shadow-gold"
+                                    >
+                                        JETZT VERBINDLICH BUCHEN
+                                    </button>
+                                </form>
+                            )}
+
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </section>
