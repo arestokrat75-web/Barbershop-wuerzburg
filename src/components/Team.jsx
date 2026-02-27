@@ -4,21 +4,21 @@ const team = [
         role: 'Gründer & Master Barber',
         specialty: 'Klassische Schnitte & Fade-Techniken',
         bio: '12 Jahre Erfahrung. Max hat MAX Barber mit einer Mission gegründet: jedem Mann den Haarschnitt zu geben, den er sich wirklich wünscht.',
-        img: '/barber-1.png',
+        img: 'barber-1.png',
     },
     {
         name: 'Leon Hartmann',
         role: 'Senior Barber',
         specialty: 'Moderne Styles & Bartdesign',
         bio: '8 Jahre Erfahrung. Leons kreative Bartformungen und Skin Fades sind in Würzburg legendär.',
-        img: '/barber-2.png',
+        img: 'barber-2.png',
     },
     {
         name: 'Viktor Brandt',
         role: 'Grooming Spezialist',
         specialty: 'Hot-Towel Rasur & Gesichtsbehandlung',
         bio: '15 Jahre Erfahrung. Viktor verwandelt jeden Besuch in ein Premium-Wellness-Erlebnis.',
-        img: '/barber-3.png',
+        img: 'barber-3.png',
     },
 ];
 
@@ -52,7 +52,7 @@ export default function Team() {
                             {/* Image */}
                             <div className="relative h-80 overflow-hidden">
                                 <img
-                                    src={member.img}
+                                    src={`${import.meta.env.BASE_URL}${member.img}`}
                                     alt={member.name}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />

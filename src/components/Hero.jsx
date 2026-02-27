@@ -4,7 +4,7 @@ export default function Hero() {
             {/* Background image + dark overlay */}
             <div className="absolute inset-0">
                 <img
-                    src="/hero-bg.png"
+                    src={`${import.meta.env.BASE_URL}hero-bg.png`}
                     alt="MAX Barber Premium Barbershop"
                     className="w-full h-full object-cover"
                 />
