@@ -102,7 +102,7 @@ export default function Booking() {
                                     backgroundSize: '20px',
                                 }}
                             >
-                                <option value="" disabled>Leistung auswählen…</option>
+                                <option value="" disabled>Service auswählen…</option>
                                 {serviceOptions.map((opt) => (
                                     <option key={opt} value={opt}>{opt}</option>
                                 ))}
@@ -127,7 +127,8 @@ export default function Booking() {
                                     Uhrzeit
                                 </label>
                                 <input
-                                    type="time" id="time" name="time"
+                                    type="time" id="time" name="time" required
+                                    min="09:00" max="19:00" step="900"
                                     value={formData.time} onChange={handleChange}
                                     className="w-full px-4 py-3 bg-barber-surface border border-barber-border rounded-lg text-barber-text focus:outline-none focus:border-barber-gold/50 focus:ring-1 focus:ring-barber-gold/20 transition-all duration-300"
                                 />
