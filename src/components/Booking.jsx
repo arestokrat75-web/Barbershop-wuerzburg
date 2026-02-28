@@ -108,7 +108,7 @@ export default function Booking() {
         e.preventDefault();
 
         // Prepare WhatsApp message
-        const phone = "491234567890"; // PLACEHOLDER: Please provide your actual WhatsApp number
+        const phone = "38269568067"; // WhatsApp number from user
         const dateStr = formData.date?.toLocaleDateString('de-DE');
         const message = `*Neue Buchung - MAX Barber*%0A%0A` +
             `*Kunde:* ${formData.name}%0A` +
