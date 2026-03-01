@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import Promise from './components/Promise';
 import Hygiene from './components/Hygiene';
 import Pricing from './components/Pricing';
+import Gallery from './components/Gallery';
 import Team from './components/Team';
 import StylingSupport from './components/StylingSupport';
 import Testimonials from './components/Testimonials';
@@ -45,6 +46,10 @@ export default function App() {
 
                 <div className="reveal">
                     <Pricing />
+                </div>
+
+                <div className="reveal">
+                    <Gallery />
                 </div>
 
                 <div className="reveal">

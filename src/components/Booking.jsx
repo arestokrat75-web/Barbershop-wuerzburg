@@ -64,10 +64,22 @@ export default function Booking() {
         fetchAvailability();
     }, [formData.date]);
 
-    // Time slots (9:00 - 19:00, 15min)
+    // Time slots (Mo-Fr: 9-19, Sa: 9-16, 15min)
     const timeSlotsArray = useMemo(() => {
+        if (!formData.date) return [];
+
+        const dayOfWeek = formData.date.getDay();
+        let startHour = 9;
+        let endHour = 19; // Default Mo-Fr
+
+        if (dayOfWeek === 6) { // Saturday
+            endHour = 16;
+        } else if (dayOfWeek === 0) { // Sunday
+            return [];
+        }
+
         const slots = [];
-        for (let hour = 9; hour < 19; hour++) {
+        for (let hour = startHour; hour < endHour; hour++) {
             for (let min = 0; min < 60; min += 15) {
                 const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 
@@ -389,6 +401,39 @@ export default function Booking() {
                                 </form>
                             )}
 
+                            {/* Persistent Location & Map Footer */}
+                            <div className="mt-12 pt-8 border-t border-barber-border grid md:grid-cols-2 gap-8 items-center">
+                                <div>
+                                    <h4 className="text-barber-gold font-bold mb-2 uppercase tracking-widest text-xs">UNSER STANDORT</h4>
+                                    <p className="text-xl font-bold mb-1">Salon Würzburg</p>
+                                    <p className="text-barber-text-dim mb-4">Domstraße 15, 97070 Würzburg</p>
+
+                                    <div className="flex gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-barber-gold/10 flex items-center justify-center border border-barber-gold/30">
+                                            <svg className="w-5 h-5 text-barber-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-barber-text-dim uppercase tracking-tighter">Öffnungszeiten</p>
+                                            <p className="text-sm font-semibold">Mo-Fr: 09:00 - 19:00</p>
+                                            <p className="text-sm font-semibold">Sa: 09:00 - 16:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-xl overflow-hidden border border-barber-border h-48 grayscale hover:grayscale-0 transition-all duration-700 shadow-xl">
+                                    <iframe
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2591.956636737397!2d9.92888!3d49.79377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47a28fcc63d3c1c9%3A0x422d4d5e05445e0!2sDomstra%C3%9Fe%2015%2C%2097070%20W%C3%BCrzburg!5e0!3m2!1sde!2sde!4v1710000000000!5m2!1sde!2sde"
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0 }}
+                                        allowFullScreen=""
+                                        loading="lazy"
+                                    ></iframe>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
