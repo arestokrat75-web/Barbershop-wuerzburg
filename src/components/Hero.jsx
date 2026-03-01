@@ -27,18 +27,17 @@ export default function Hero() {
 
                 {/* Headline */}
                 <h1 className="animate-fade-in-up font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-                    <span className="text-barber-text">Dein Wunsch-Schnitt</span>
+                    <span className="text-barber-text">🚀 Premium Webseite – </span>
                     <br />
-                    <span className="text-barber-text">in Würzburg – </span>
-                    <span className="text-gradient-gold">Ohne Kompromisse,</span>
+                    <span className="text-gradient-gold">Komplettsystem inkl. </span>
                     <br />
-                    <span className="text-gradient-gold">ohne Überraschungen.</span>
+                    <span className="text-gradient-gold text-3xl sm:text-4xl">Termin-Kalender & WhatsApp-Synchronisiert.</span>
                 </h1>
 
                 {/* Subline */}
-                <p className="animate-fade-in opacity-0 [animation-delay:0.4s] text-barber-text-muted text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Erstklassige Handwerkskunst trifft auf echtes Zuhören.
-                    Wir schneiden nicht „unser Ding" – wir setzen <em className="text-barber-gold not-italic">deine Vision</em> um.
+                <p className="animate-fade-in opacity-0 [animation-delay:0.4s] text-barber-text-muted text-lg md:text-xl max-w-3xl mx-auto mb-10 leading-relaxed">
+                    Bieten Sie Ihren Kunden ein erstklassiges Erlebnis – nicht nur eine einfache Webseite.
+                    Ich erstelle für Sie eine hochmoderne, voll funktionsfähige Landingpage für Ihre Nische.
                 </p>
 
                 {/* CTA */}

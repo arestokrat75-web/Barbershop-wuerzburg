@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import Promise from './components/Promise';
-import Hygiene from './components/Hygiene';
+import Highlights from './components/Highlights';
 import Pricing from './components/Pricing';
 import Gallery from './components/Gallery';
-import Team from './components/Team';
-import StylingSupport from './components/StylingSupport';
+import Vorteile from './components/Vorteile';
 import Testimonials from './components/Testimonials';
 import Booking from './components/Booking';
 import Footer from './components/Footer';
@@ -37,15 +35,11 @@ export default function App() {
                 <Hero />
 
                 <div className="reveal">
-                    <Promise />
+                    <Highlights />
                 </div>
 
                 <div className="reveal">
-                    <Hygiene />
-                </div>
-
-                <div className="reveal">
-                    <Pricing />
+                    <Vorteile />
                 </div>
 
                 <div className="reveal">
@@ -53,11 +47,7 @@ export default function App() {
                 </div>
 
                 <div className="reveal">
-                    <Team />
-                </div>
-
-                <div className="reveal">
-                    <StylingSupport />
+                    <Pricing />
                 </div>
 
                 <div className="reveal">

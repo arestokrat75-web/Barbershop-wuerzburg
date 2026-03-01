@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 
 const navLinks = [
     { href: '#hero', label: 'Start' },
-    { href: '#versprechen', label: 'Versprechen' },
-    { href: '#hygiene', label: 'Hygiene' },
+    { href: '#highlights', label: 'Highlights' },
+    { href: '#vorteile', label: 'Vorteile' },
+    { href: '#galerie', label: 'Galerie' },
     { href: '#preise', label: 'Preise' },
-    { href: '#team', label: 'Team' },
-    { href: '#bewertungen', label: 'Bewertungen' },
-    { href: '#buchen', label: 'Buchen' },
+    { href: '#buchen', label: 'System-Demo' },
 ];
 
 export default function Navbar() {
@@ -29,8 +28,8 @@ export default function Navbar() {
         <>
             <nav
                 className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled
-                        ? 'glass-dark border-b border-barber-border shadow-lg'
-                        : 'bg-transparent'
+                    ? 'glass-dark border-b border-barber-border shadow-lg'
+                    : 'bg-transparent'
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-20">
@@ -121,7 +120,7 @@ export default function Navbar() {
                             onClick={() => setMobileOpen(false)}
                             className="w-full text-center px-6 py-3 text-sm font-semibold text-barber-black bg-gradient-gold rounded hover:shadow-lg transition-all duration-300"
                         >
-                            Termin buchen
+                            System-Demo
                         </a>
                     </div>
                 </div>
