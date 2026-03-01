@@ -4,10 +4,10 @@ const galleryImages = [
     { id: 3, src: 'barber-3.png', title: 'Klassisches Styling' },
     { id: 4, src: 'mohamed_hassan-man-8765248_1920.jpg', title: 'Premium Service' },
     { id: 5, src: 'macroodry-fashion-8254063_1920.jpg', title: 'Texturierter Look' },
-    { id: 6, src: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop', title: 'Vintage Barber Style' },
+    { id: 6, src: 'https://images.unsplash.com/photo-1593702295094-17256929c382?w=800&auto=format&fit=crop', title: 'Vintage Barber Style' },
     { id: 7, src: 'shave-master.jpg.jpg', title: 'Nassrasur-Meisterschaft' },
     { id: 8, src: 'styling-finish.jpg', title: 'Styling & Finish' },
-    { id: 9, src: 'barber-1.png', title: 'Detailarbeit' },
+    { id: 9, src: 'https://images.unsplash.com/photo-1512690196162-7c97262c5735?w=800&auto=format&fit=crop', title: 'Detailarbeit' },
 ];
 
 export default function Gallery() {
