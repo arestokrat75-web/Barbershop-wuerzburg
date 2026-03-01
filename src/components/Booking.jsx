@@ -124,7 +124,6 @@ export default function Booking() {
         const dateStr = formData.date?.toLocaleDateString('de-DE');
         const message = `*Neue Buchung - MAX Barber*%0A%0A` +
             `*Kunde:* ${formData.name}%0A` +
-            `*Telefon:* ${formData.phone}%0A` +
             `*Service:* ${formData.service?.name}%0A` +
             `*Meister:* ${formData.master?.name}%0A` +
             `*Termin:* ${dateStr}, ${formData.time} Uhr%0A%0A` +
@@ -353,25 +352,13 @@ export default function Booking() {
                                     <h3 className="font-serif text-2xl font-bold mb-6">Persönliche Informationen</h3>
 
                                     <div className="space-y-4">
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <input
-                                                type="text" required placeholder="Dein Name *"
-                                                value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
-                                            />
-                                            <input
-                                                type="tel" required placeholder="Telefonnummer *"
-                                                value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
-                                            />
-                                        </div>
                                         <input
-                                            type="email" placeholder="E-Mail Adresse"
-                                            value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            type="text" required placeholder="Dein Name *"
+                                            value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50"
                                         />
                                         <textarea
-                                            placeholder="Nachricht (Optional)" rows="3"
+                                            placeholder="Nachricht (Optional, z.B. Bartlänge)" rows="3"
                                             value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                             className="w-full px-5 py-4 bg-barber-black border border-barber-border rounded-xl text-barber-text placeholder:text-barber-text-dim outline-none focus:border-barber-gold/50 resize-none"
                                         />
@@ -396,7 +383,7 @@ export default function Booking() {
                                         type="submit"
                                         className="w-full btn-shimmer py-5 text-barber-black font-bold tracking-[0.2em] rounded-xl shadow-gold"
                                     >
-                                        JETZT VERBINDLICH BUCHEN
+                                        TERMIN PER WHATSAPP BESTÄTIGEN
                                     </button>
                                 </form>
                             )}
