@@ -31,7 +31,7 @@ export default function Gallery() {
                             style={{ transitionDelay: `${index * 100}ms` }}
                         >
                             <img
-                                src={img.src.startsWith('http') ? img.src : `${import.meta.env.BASE_URL}${img.src}`}
+                                src={img.src.startsWith('http') ? img.src : `${import.meta.env.BASE_URL || '/'}${img.src.replace(/^\//, '')}`}
                                 alt={img.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
                             />
