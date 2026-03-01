@@ -6,7 +6,7 @@ const galleryImages = [
     { id: 5, src: 'macroodry-fashion-8254063_1920.jpg', title: 'Texturierter Look' },
     { id: 6, src: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop', title: 'Vintage Barber Style' },
     { id: 7, src: 'shave-master.jpg.jpg', title: 'Nassrasur-Meisterschaft' },
-    { id: 8, src: 'https://images.unsplash.com/photo-1512690196162-7c97262c5735?w=800&auto=format&fit=crop', title: 'Styling & Finish' },
+    { id: 8, src: 'Styling & Finish.jpg.jpg', title: 'Styling & Finish' },
     { id: 9, src: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=800&auto=format&fit=crop', title: 'Detailarbeit' },
 ];
 
