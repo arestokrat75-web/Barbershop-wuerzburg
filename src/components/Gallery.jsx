@@ -5,7 +5,7 @@ const galleryImages = [
     { id: 4, src: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&auto=format&fit=crop', title: 'Premium Service' },
     { id: 5, src: 'https://images.unsplash.com/photo-1593702295094-17256929c382?w=800&auto=format&fit=crop', title: 'Texturierter Look' },
     { id: 6, src: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop', title: 'Vintage Barber Style' },
-    { id: 7, src: 'https://images.unsplash.com/photo-1621605815841-28d645d5a23c?w=800&auto=format&fit=crop', title: 'Nassrasur-Meisterschaft' },
+    { id: 7, src: 'shave-master.jpg.jpg', title: 'Nassrasur-Meisterschaft' },
     { id: 8, src: 'https://images.unsplash.com/photo-1512690196162-7c97262c5735?w=800&auto=format&fit=crop', title: 'Styling & Finish' },
     { id: 9, src: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=800&auto=format&fit=crop', title: 'Detailarbeit' },
 ];
